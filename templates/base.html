@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DOJO - Journey of Doing</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Navbar/Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <!-- Logo + Title -->
+      <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard') }}">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="DOJO Logo" width="35" height="35" class="me-2">
+        <span class="fw-bold">DOJO</span>
+        <small class="ms-2">— Journey of Doing</small>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          {% if session.username %}
+          <li class="nav-item">
+            <button class="btn btn-link nav-link text-white position-relative d-flex align-items-center" 
+                    data-bs-toggle="offcanvas" data-bs-target="#profilePanel">
+            
+             {% if session.photo %}
+              <img src="{{ url_for('static', filename='uploads/' ~ session.photo) }}" 
+                   class="rounded-circle me-2" width="30" height="30">
+             {% else %}
+               <i class="fa-solid fa-user-circle me-2"></i>
+             {% endif %}
+
+             {{ session.username }}
+
+             {% if notifications and notifications|length > 0 %}
+               <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ notifications|length }}
+               </span>
+             {% endif %}
+            </button>
+
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Profile Side Panel -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="profilePanel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Profile</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="text-center mb-3">
+      {% if session.photo %}
+        <img src="{{ url_for('static', filename='uploads/' ~ session.photo) }}" class="rounded-circle mb-2" width="80" height="80">
+      {% else %}
+        <i class="fa-solid fa-circle-user fa-4x mb-2"></i>
+      {% endif %}
+      <h6>{{ session.username }}</h6>
+      <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+    </div>
+    <ul class="list-unstyled">
+      <!-- Themes Toggle -->
+      <li class="mb-3 d-flex align-items-center">
+        <i class="fa-solid fa-palette me-2"></i>
+        <span class="me-2">Themes</span>
+        <div class="form-check form-switch d-inline-block ms-auto">
+          <input class="form-check-input" type="checkbox" id="themeToggle">
+          <label class="form-check-label" for="themeToggle">
+            <span id="themeIcon">🌞</span>
+          </label>
+        </div>
+      </li>
+
+      <!-- Notifications Section -->
+    <li class="mb-3">
+      <i class="fa-solid fa-bell me-2"></i> Notifications
+      <ul class="list-group mt-2">
+        {% if notifications %}
+          {% for note in notifications %}
+           <li class="list-group-item small">
+            <strong>{{ note.task }}</strong> ({{ note.category }})<br>
+            <span class="text-danger">Due: {{ note.due }}</span>
+           </li>
+          {% endfor %}
+        {% else %}
+         <li class="list-group-item small text-muted">No due tasks 🎉</li>
+        {% endif %}
+      </ul>
+    </li>
+    <li class="mb-3">
+      <i class="fa-solid fa-chart-line me-2"></i>
+      <a href="{{ url_for('progress_analytics') }}" class="profile-link">Progress & Analytics</a>
+    </li>
+    <li class="mb-3">
+      <i class="fa-solid fa-right-from-bracket me-2"></i>
+      <a href="{{ url_for('logout') }}" class="profile-link">Log Out</a>
+    </li>
+    </ul>
+  </div>
+</div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" name="username" class="form-control" value="{{ session.username }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Profile Photo</label>
+              <input type="file" name="photo" class="form-control" accept="image/*">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="container my-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ 'success' if category=='success' else ('danger' if category=='danger' else 'info') }} alert-dismissible fade show" role="alert">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Theme Toggle Script -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+<footer class="footer text-white py-3 mt-auto">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <span>Dojo © 2025 – Journey of Doing</span>
+    <div>
+      <a href="#" class="text-white ms-3"><i class="fab fa-github"></i></a>
+      <a href="#" class="text-white ms-3"><i class="fab fa-twitter"></i></a>
+      <a href="#" class="text-white ms-3"><i class="fab fa-instagram"></i></a>
+    </div>
+  </div>
+</footer>
+</html>

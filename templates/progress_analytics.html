@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Progress & Analytics</h2>
+<p>Visual insights into your task completion.</p>
+
+<div class="row">
+  <!-- Completed per Category -->
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Completed Tasks per Category</h5>
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue vs On-Time -->
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Overdue vs On-Time Tasks</h5>
+        <canvas id="overdueChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Over Time -->
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Tasks Completed Over Time (Weekly)</h5>
+        <canvas id="timeChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // ✅ Make sure data is safely converted from Python dicts to JSON
+  const categoryData = {{ completed_per_category | tojson | safe }};
+  const overdueData = {{ overdue_vs_ontime | tojson | safe }};
+  const timeData = {{ completed_over_time | tojson | safe }};
+
+  console.log("Category Data:", categoryData);
+  console.log("Overdue Data:", overdueData);
+  console.log("Time Data:", timeData);
+
+  // Category Chart
+  if (Object.keys(categoryData).length > 0) {
+    new Chart(document.getElementById('categoryChart'), {
+      type: 'pie',
+      data: {
+        labels: Object.keys(categoryData),
+        datasets: [{
+          data: Object.values(categoryData),
+          backgroundColor: ['#4e79a7','#f28e2b','#e15759']
+        }]
+      }
+    });
+  }
+
+  // Overdue vs On-Time
+  if (Object.keys(overdueData).length > 0) {
+    new Chart(document.getElementById('overdueChart'), {
+      type: 'pie',
+      data: {
+        labels: Object.keys(overdueData),
+        datasets: [{
+          data: Object.values(overdueData),
+          backgroundColor: ['#e15759','#59a14f']
+        }]
+      }
+    });
+  }
+
+  // Completed Over Time
+  if (Object.keys(timeData).length > 0) {
+    new Chart(document.getElementById('timeChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(timeData),
+        datasets: [{
+          label: 'Tasks Completed',
+          data: Object.values(timeData),
+          backgroundColor: '#4e79a7'
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+</script>
+{% endblock %}
