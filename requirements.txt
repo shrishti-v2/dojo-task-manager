@@ -1,4 +1,0 @@
-Flask==2.3.3
-Flask-PyMongo==2.3.0
-Flask-Bcrypt==1.0.1
-pymongo==4.4.0
