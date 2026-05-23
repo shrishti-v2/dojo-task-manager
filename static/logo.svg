@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <!-- Circle background -->
+  <circle cx="24" cy="24" r="22" fill="#0d6efd" stroke="#ffffff" stroke-width="2"></circle>
+  <!-- Checkmark style path (represents 'doing') -->
+  <path d="M14 24l6 6 14-14" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
